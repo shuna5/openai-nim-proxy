@@ -49,7 +49,7 @@ app.get('/v1/models', (req, res) => {
   res.json({ object: 'list', data: models });
 });
 
-// Chat
+// Chat completions
 app.post('/v1/chat/completions', async (req, res) => {
   try {
     const { model, messages, temperature, max_tokens, stream } = req.body;
@@ -87,7 +87,33 @@ app.post('/v1/chat/completions', async (req, res) => {
   }
 });
 
-// Catch-all (ВАЖНО)
+// 🔥 FIX ДЛЯ JANITOR (ВАЖНО)
+app.all('/v1', async (req, res) => {
+  try {
+    const response = await axios.post(
+      `${NIM_API_BASE}/chat/completions`,
+      req.body,
+      {
+        headers: {
+          Authorization: `Bearer ${NIM_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    res.json(response.data);
+
+  } catch (err) {
+    res.status(500).json({
+      error: {
+        message: err.message,
+        type: 'proxy_error'
+      }
+    });
+  }
+});
+
+// Catch-all
 app.all('*', (req, res) => {
   res.status(404).json({
     error: {
